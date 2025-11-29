@@ -175,26 +175,18 @@ public class Ex1 {
 	 */
 	public static double sameValue(double[] p1, double[] p2, double x1, double x2, double eps) {
         /// add you code below
-        // g1 = p1(x1) - p2(x1)
+
         double g1 = f(p1, x1) - f(p2, x1);
-
-        // נקודת אמצע
         double xm = (x1 + x2) / 2.0;
-
-        // gm = p1(xm) - p2(xm)
         double gm = f(p1, xm) - f(p2, xm);
 
-        // אם הפונקציות כמעט שוות בנקודה xm → זה הפתרון
         if (Math.abs(gm) < eps) {
             return xm;
         }
 
-        // מחליטים באיזה חצי טווח להמשיך לפי שינוי סימן (כמו ב-root_rec)
         if (g1 * gm <= 0) {
-            // השורש בין x1 ל-xm
             return sameValue(p1, p2, x1, xm, eps);
         } else {
-            // השורש בין xm ל-x2
             return sameValue(p1, p2, xm, x2, eps);
         }
     }
@@ -294,110 +286,111 @@ public class Ex1 {
 	 * This function computes the array representation of a polynomial function from a String
 	 * representation. Note:given a polynomial function represented as a double array,
 	 * getPolynomFromString(poly(p)) should return an array equals to p.
-	 * 
 	 * @param p - a String representing polynomial function.
 	 * @return
+     * the function is going to be using 2 heleper functions:
+     * we take the polynom in main function and split to monoms - ax^b while a = coefficient and b = power
+     * the helper functions are responsible for getting the coefficient and the power after we split the
+     * polynom into strings of monos
 	 */
-	public static double[] getPolynomFromString(String p) {
-		double [] ans = ZERO;//  -1.0x^2 +3.0x +2.0
-        /// add you code below
-         if (p == null) {
-         return ans;
-         }
+    public static double[] getPolynomFromString(String p) {
+        // if null then ZERO
+        if (p == null) {
+            return ZERO;
+        }
 
-        String s = p.replace(" ", "");
+        p = p.trim();
+        if (p.equals("")) {
+            return ZERO;
+        }
 
+        ///  clean spaces
+        String s = p.replace(" ", "");   // "x^2 +x +1" → "x^2+x+1"
+
+        ///  replace " - " with " +- "
         s = s.replace("-", "+-");
 
+        /// if + at start we take down
         if (s.startsWith("+")) {
             s = s.substring(1);
         }
 
-        String[] parts = s.split("\\+");
+        /// split into monoms
+        String[] parts = s.split("\\+");   // "x^2+x+1" → ["x^2","x","1"]
 
-        // 4. מציאת החזקה המקסימלית
+        /// getting max power
         int maxPower = 0;
-
         for (int i = 0; i < parts.length; i++) {
             String t = parts[i];
-
             if (!t.equals("")) {
-                int power = 0;
-
-                if (!t.contains("x")) {
-                    // קבוע → חזקה 0
-                    power = 0;
-                } else {
-                    // יש x
-                    if (t.contains("^")) {
-                        // לדוגמה: "-1.0x^2"
-                        String[] splitPower = t.split("\\^"); // ["-1.0x", "2"]
-                        if (splitPower.length > 1) {
-                            power = Integer.parseInt(splitPower[1]);
-                        } else {
-                            power = 1;
-                        }
-                    } else {
-                        // לדוגמה: "3x" או "-x"
-                        power = 1;
-                    }
-                }
-
+                int power = getPowerFromTerm(t);
                 if (power > maxPower) {
                     maxPower = power;
                 }
             }
         }
+        double[] ans = new double[maxPower + 1];
 
-        // 5. יצירת המערך בגודל המתאים
-        ans = new double[maxPower + 1];
-
-        // 6. מילוי המקדמים במקומות הנכונים
+        /// filling the coefficients in their places
         for (int i = 0; i < parts.length; i++) {
             String t = parts[i];
-
             if (!t.equals("")) {
-                double coef = 0.0;
-                int power = 0;
-
-                if (!t.contains("x")) {
-                    // קבוע בלבד, למשל "2.0"
-                    coef = Double.parseDouble(t);
-                    power = 0;
-                } else {
-                    // יש x
-                    // חזקה
-                    if (t.contains("^")) {
-                        String[] splitPower = t.split("\\^"); // ["-1.0x", "2"]
-                        if (splitPower.length > 1) {
-                            power = Integer.parseInt(splitPower[1]);
-                        } else {
-                            power = 1;
-                        }
-                    } else {
-                        power = 1;
-                    }
-
-                    // מקדם
-                    String[] splitCoef = t.split("x"); // למשל: ["-1.0", "^2"] או ["3.0", ""]
-                    String coefStr = splitCoef[0];
-
-                    if (coefStr.equals("") || coefStr.equals("+")) {
-                        coef = 1.0;
-                    } else if (coefStr.equals("-")) {
-                        coef = -1.0;
-                    } else {
-                        coef = Double.parseDouble(coefStr);
-                    }
-                }
-
+                int power = getPowerFromTerm(t);
+                double coef = getCoefFromTerm(t);
                 ans[power] += coef;
             }
         }
 
         return ans;
     }
-	/**
+
+
+    private static int getPowerFromTerm(String term) {
+        if (term == null || term.equals("")) {
+            return 0;
+        }
+
+        if (!term.contains("x")) {
+            return 0;
+        }
+
+        if (term.contains("^")) {
+            String[] splitPower = term.split("\\^");
+            if (splitPower.length > 1) {
+                return Integer.parseInt(splitPower[1]);
+            } else {
+                return 1;
+            }
+        }
+
+
+        return 1;
+    }
+
+
+    private static double getCoefFromTerm(String term) {
+        if (term == null || term.equals("")) {
+            return 0.0;
+        }
+
+        if (!term.contains("x")) {
+
+            return Double.parseDouble(term);
+        }
+
+        // מפצלים לפי x כדי לקחת את מה שלפניו
+        String[] splitCoef = term.split("x", 2);
+        String coefStr = splitCoef[0];
+
+        if (coefStr.equals("") || coefStr.equals("+")) {
+            return 1.0;
+        }
+        if (coefStr.equals("-")) {
+            return -1.0;
+        }
+
+        return Double.parseDouble(coefStr);
+    }	/**
 	 * This function computes the polynomial function which is the sum of two polynomial functions (p1,p2)
 	 * @param p1
 	 * @param p2

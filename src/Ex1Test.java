@@ -201,4 +201,92 @@ class Ex1Test {
 		double area = 58.5658;
 		assertEquals(a1,area, Ex1.EPS);
 	}
+    @Test
+    /**
+     * Tests that root_rec locates a root inside the provided range.
+     */
+    void testRootRec() {
+        double[] poly = {-2, 0, 1}; // x^2 - 2, root at sqrt(2)
+        double root = Ex1.root_rec(poly, 1, 2, Ex1.EPS);
+        assertTrue(root >= 1 && root <= 2);
+        assertEquals(0, Ex1.f(poly, root), Ex1.EPS);
+    }
+
+    @Test
+    /**
+     * Tests the polynomial formatting skips zero coefficients and keeps order.
+     */
+    void testPolyFormatting() {
+        double[] poly = {0, -3, 0, 2}; // 2x^3 -3x
+        String repr = Ex1.poly(poly);
+        assertEquals("2.0x^3 -3.0x", repr);
+    }
+
+    @Test
+    /**
+     * Tests polynom creation from three points.
+     */
+    void testPolynomFromPointsThree() {
+        double[] xx = {0, 1, 2};
+        double[] yy = {1, 2, 5}; // x^2 + 1
+        double[] expected = {1, 0, 1};
+        double[] actual = Ex1.PolynomFromPoints(xx, yy);
+        assertTrue(Ex1.equals(expected, actual));
+    }
+
+    @Test
+    /**
+     * Tests polynom creation from two points (straight line).
+     */
+    void testPolynomFromPointsTwo() {
+        double[] xx = {-1, 3};
+        double[] yy = {5, -3}; // slope -2, intercept 3
+        double[] expected = {3, -2};
+        double[] actual = Ex1.PolynomFromPoints(xx, yy);
+        assertTrue(Ex1.equals(expected, actual));
+    }
+
+    @Test
+    /**
+     * Tests the length computation on a straight line is exact.
+     */
+    void testLengthStraightLine() {
+        double[] line = {0, 1}; // y = x
+        double len = Ex1.length(line, 0, 1, 4);
+        assertEquals(Math.sqrt(2), len, Ex1.EPS);
+    }
+
+    @Test
+    /**
+     * Tests length handles reversed ranges by swapping bounds internally.
+     */
+    void testLengthReversedRange() {
+        double[] line = {1}; // y = 1 (flat)
+        double len = Ex1.length(line, 2, -1, 3);
+        assertEquals(3.0, len, Ex1.EPS);
+    }
+
+    @Test
+    /**
+     * Tests sameValue returns a point where the polynomials meet.
+     */
+    void testSameValueEvaluatesMatch() {
+        double[] p1 = {0, 1}; // y = x
+        double[] p2 = {1}; // y = 1
+        double x = Ex1.sameValue(p1, p2, 0, 2, Ex1.EPS);
+        double diff = Ex1.f(p1, x) - Ex1.f(p2, x);
+        assertEquals(0, diff, Ex1.EPS);
+    }
+
+    @Test
+    /**
+     * Tests getPolynomFromString handles null and aggregates coefficients.
+     */
+    void testGetPolynomFromStringEdgeCases() {
+        assertArrayEquals(Ex1.ZERO, Ex1.getPolynomFromString(null));
+
+        String expr = "x^2 + x + 1 - x"; // simplifies to x^2 +1
+        double[] parsed = Ex1.getPolynomFromString(expr);
+        assertTrue(Ex1.equals(new double[]{1, 0, 1}, parsed));
+    }
 }
