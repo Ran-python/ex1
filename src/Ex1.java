@@ -51,6 +51,14 @@ public class Ex1 {
 	 * This function computes a polynomial representation from a set of 2D points on the polynom.
 	 * The solution is based on: //	http://stackoverflow.com/questions/717762/how-to-calculate-the-vertex-of-a-parabola-given-three-points
 	 * Note: this function only works for a set of points containing up to 3 points, else returns null.
+     * Builds a polynomial that passes through 2 or 3 given points.
+     * Uses the points in arrays xx (x-values) and yy (y-values).
+     *
+     * Supports:
+     * - 2 points → returns a linear polynomial {b, m}
+     * - 3 points → returns a quadratic polynomial {c, b, a}
+     *
+     * If the number of points is not 2 or 3, or the input is invalid, returns null.
 	 * @param xx
 	 * @param yy
 	 * @return an array of doubles representing the coefficients of the polynom.
