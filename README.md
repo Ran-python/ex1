@@ -23,3 +23,7 @@ A polynomial is represented as a double array where each element corresponds to 
 Example:
 ```java
 double[] p = {0.1, 0, -3, 0.2};
+
+
+
+<img width="766" height="844" alt="image" src="https://github.com/user-attachments/assets/4829e125-8c8a-477e-acd0-63d1e14efac6" />
