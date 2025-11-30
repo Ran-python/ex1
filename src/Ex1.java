@@ -175,6 +175,11 @@ public class Ex1 {
 	 */
 	public static double sameValue(double[] p1, double[] p2, double x1, double x2, double eps) {
         /// add you code below
+        if (x1 > x2) {
+            double temp = x1;
+            x1 = x2;
+            x2 = temp;
+        }
 
         double g1 = f(p1, x1) - f(p2, x1);
         double xm = (x1 + x2) / 2.0;
@@ -241,6 +246,15 @@ public class Ex1 {
 	 * Given two polynomial functions (p1,p2), a range [x1,x2] and an integer representing the number of Trapezoids between the functions (number of samples in on each polynom).
 	 * This function computes an approximation of the area between the polynomial functions within the x-range.
 	 * The area is computed using Riemann's like integral (https://en.wikipedia.org/wiki/Riemann_integral)
+     *
+     * Implementation summary:
+     * 1. If x1 > x2, the values are swapped to ensure a valid range.
+     * 2. The interval is divided into 'numberOfTrapezoid' sub-intervals (minimum 1).
+     * 3. For each sub-interval, compute the difference d(x) = f(p1, x) - f(p2, x).
+     * 4. If d1 and d2 have the same sign, compute the regular trapezoid area.
+     * 5. If a sign change occurs (the graphs cross), find the intersection point using sameValue(),
+     * split the interval at that point, and compute each partial area separately.
+     * 6. The absolute value of the area is accumulated.
 	 * @param p1 - first polynomial function
 	 * @param p2 - second polynomial function
 	 * @param x1 - minimal value of the range
@@ -248,7 +262,8 @@ public class Ex1 {
 	 * @param numberOfTrapezoid - a natural number representing the number of Trapezoids between x1 and x2.
 	 * @return the approximated area between the two polynomial functions within the [x1,x2] range.
 	 */
-     public static double area(double[] p1,double[]p2, double x1, double x2, int numberOfTrapezoid) {
+
+    public static double area(double[] p1,double[]p2, double x1, double x2, int numberOfTrapezoid) {
 		double ans = 0.0;
         ///add you code below
          if (x1 > x2) {
@@ -256,24 +271,26 @@ public class Ex1 {
          x1 = x2;
          x2 = temp;
          }
-        int n = numberOfTrapezoid * 50;
+         int n = Math.max(1, numberOfTrapezoid);
         double h = (x2 - x1) / n;
 
         for (int i =0;i<n;i++){
             double c1 = h * i + x1;
             double c2 = h * (i+1) + x1;
 
-            double y1l = f(p1, c1);
-            double y2l = f(p2, c1);
+            double d1 = f(p1, c1) - f(p2, c1);
+            double d2 = f(p1, c2) - f(p2, c2);
 
-            double y1r = f(p1, c2);
-            double y2r = f(p2, c2);
-
-            double d1 = Math.abs(y1l-y2l);
-            double d2 = Math.abs(y1r-y2r);
-
-            double trp = (d1 + d2) * 0.5 * h;
-            ans += trp;
+            // if there is a sign change, locate the crossing point and split the trapezoid
+            if (d1 * d2 < 0) {
+                double xr = sameValue(p1, p2, c1, c2, EPS);
+                double mid = xr;
+                ans += Math.abs((d1 + 0) * 0.5 * (mid - c1));
+                ans += Math.abs((0 + d2) * 0.5 * (c2 - mid));
+            } else {
+                double trp = Math.abs((d1 + d2) * 0.5 * h);
+                ans += trp;
+            }
 
         }
 
@@ -282,17 +299,25 @@ public class Ex1 {
 		return ans;
 	}
 
-   	/**
+
+    /**
 	 * This function computes the array representation of a polynomial function from a String
 	 * representation. Note:given a polynomial function represented as a double array,
 	 * getPolynomFromString(poly(p)) should return an array equals to p.
 	 * @param p - a String representing polynomial function.
 	 * @return
-     * the function is going to be using 2 heleper functions:
-     * we take the polynom in main function and split to monoms - ax^b while a = coefficient and b = power
-     * the helper functions are responsible for getting the coefficient and the power after we split the
-     * polynom into strings of monos
-	 */
+     *
+     * The function uses two helper functions:
+     * - getPowerFromTerm(String term): extracts the power (b in ax^b)
+     * - getCoefFromTerm(String term): extracts the coefficient (a in ax^b)
+     *
+     * Steps:
+     * 1) Clean whitespace, convert "-" to "+-" so we can split correctly
+     * 2) Split into terms (monoms)
+     * 3) Determine maximum power to know array size
+     * 4) Fill coefficient values in the correct power indices
+     */
+
     public static double[] getPolynomFromString(String p) {
         // if null then ZERO
         if (p == null) {
@@ -344,6 +369,17 @@ public class Ex1 {
         return ans;
     }
 
+    /**
+     * Extracts the power (b) from a polynomial term represented as a string.
+     * Example formats:
+     *  "5x^3" -> returns 3
+     *  "x^2"  -> returns 2
+     *  "7x"   -> returns 1
+     *  "4"    -> returns 0 (no x => constant term)
+     *
+     * @param term - a polynomial single term string (e.g. "3x^2", "-x", "5")
+     * @return the power of the term as an integer
+     */
 
     private static int getPowerFromTerm(String term) {
         if (term == null || term.equals("")) {
@@ -367,6 +403,18 @@ public class Ex1 {
         return 1;
     }
 
+    /**
+     * Extracts the coefficient (a) from a polynomial term represented as a string.
+     * Example formats:
+     *  "5x^3" -> returns 5.0
+     *  "-x^2" -> returns -1.0
+     *  "x"    -> returns 1.0
+     *  "-x"   -> returns -1.0
+     *  "7"    -> returns 7.0
+     *
+     * @param term - a polynomial term (e.g. "3x^2", "-x", "+4")
+     * @return coefficient as double
+     */
 
     private static double getCoefFromTerm(String term) {
         if (term == null || term.equals("")) {
@@ -390,12 +438,15 @@ public class Ex1 {
         }
 
         return Double.parseDouble(coefStr);
-    }	/**
+    }
+
+    /**
 	 * This function computes the polynomial function which is the sum of two polynomial functions (p1,p2)
 	 * @param p1
 	 * @param p2
 	 * @return
 	 */
+
 	public static double[] add(double[] p1, double[] p2) {
 		double [] ans = ZERO;//
         ///add you code below
