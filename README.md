@@ -17,6 +17,10 @@ The main goal is to implement a set of static methods that operate on **polynomi
 
 ---
 
+<img width="766" height="844" alt="image" src="https://github.com/user-attachments/assets/6a4ef3e9-f9e5-4664-ab8a-4085cfb52755" />
+
+
+
 ## 📘 Polynomial Representation
 A polynomial is represented as a double array where each element corresponds to a coefficient:
 
@@ -26,4 +30,3 @@ double[] p = {0.1, 0, -3, 0.2};
 
 
 
-<img width="766" height="844" alt="image" src="https://github.com/user-attachments/assets/4829e125-8c8a-477e-acd0-63d1e14efac6" />
